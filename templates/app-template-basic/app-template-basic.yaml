@@ -1,0 +1,189 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: app-template-basic
+  annotations:
+    description: "Ejemplo de template para levantar 2 nginx con un index diferente cada uno"
+    iconClass: "icon-play"
+    tags: "app"
+
+labels:
+  environment: DEV
+
+parameters:
+- name: ENV_VAR_PARAM
+  description: Prueba de parametro de 10 caracteres para la variable de ambiente ENV_VAR en la app 1
+  value: hola mundo redondo
+  from: '[A-Z0-9]{10}'
+  generate: expression
+
+objects:
+
+# IMAGESTREAMS
+# ------------------------
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: is-app1
+    labels:
+      app: app1
+      template: app-template-basic
+    annotations:
+      openshift.io/image.insecureRepository: "true"
+  spec:
+    tags:
+      - name: latest
+        from:
+          kind: DockerImage
+          name: 'docker.io/brianlobonalabs/nginx-app1:latest'
+
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: is-app2
+    labels:
+      app: app2
+      template: app-template-basic
+    annotations:
+      openshift.io/image.insecureRepository: "true"
+  spec:
+    tags:
+      - name: latest
+        from:
+          kind: DockerImage
+          name: 'docker.io/brianlobonalabs/nginx-app2:latest'
+
+
+# PODS
+# ------------------------
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: pod-app1-a
+    labels:
+      app: app1
+      template: app-template-basic
+  spec:
+    containers:
+    - name: pod-app1-a
+      image: 172.30.1.1:5000/nalabs/is-app1
+      ports:
+      - containerPort: 8081
+        protocol: TCP
+      env:
+      - name: ENV_VAR
+        value: ${ENV_VAR_PARAM}
+      restartPolicy: OnFailure
+
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: pod-app1-b
+    labels:
+      app: app1
+      template: app-template-basic
+  spec:
+    containers:
+    - name: pod-app1-b
+      image: 172.30.1.1:5000/nalabs/is-app1
+      ports:
+      - containerPort: 8081
+        protocol: TCP
+      env:
+      - name: ENV_VAR
+        value: ${ENV_VAR_PARAM}
+      restartPolicy: OnFailure
+
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: pod-app2-a
+    labels:
+      app: app2
+      template: app-template-basic
+  spec:
+    containers:
+    - name: pod-app2-a
+      image: 172.30.1.1:5000/nalabs/is-app2
+      ports:
+      - containerPort: 8081
+        protocol: TCP
+      restartPolicy: OnFailure
+
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: pod-app2-b
+    labels:
+      app: app2
+      template: app-template-basic
+  spec:
+    containers:
+    - name: pod-app2-b
+      image: 172.30.1.1:5000/nalabs/is-app2
+      ports:
+      - containerPort: 8081
+        protocol: TCP
+      restartPolicy: OnFailure
+
+# SERVICES
+# ------------------------
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: svc-app1
+    labels:
+      app: app1
+      template: app-template-basic
+  spec:
+    selector:
+      app: app1
+      template: app-template-basic
+    sessionAffinity: None
+    ports:
+    - name: web
+      port: 8080
+      protocol: TCP
+      targetPort: 8081
+  status:
+    loadBalancer: {}
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: svc-app2
+    labels:
+      app: app2
+      template: app-template-basic
+  spec:
+    selector:
+      app: app2
+      template: app-template-basic
+    type: ClusterIP
+    ports:
+    - name: web
+      port: 8080
+      protocol: TCP
+      targetPort: 8081
+  status:
+    loadBalancer: {}
+
+# ROUTERS
+# ------------------------
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: route-app
+    labels:
+      template: app-template-basic
+  spec:
+    host: app.192.168.99.101.nip.io
+    path: "/" 
+    to:
+      kind: Service
+      name: svc-app1
+      weight: 20      
+    alternateBackends:
+    - kind: Service
+      name: svc-app2 
+      weight: 10     

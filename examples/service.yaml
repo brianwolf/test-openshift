@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ruby-helloworld-sample
+    template: application-template-stibuild
+  name: frontend-headless 
+spec:
+  clusterIP: None 
+  ports:
+  - name: web
+    port: 5432
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    name: frontend 
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+
+# https://docs.openshift.com/container-platform/3.10/architecture/core_concepts/pods_and_services.html
