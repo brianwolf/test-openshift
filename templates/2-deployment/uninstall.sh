@@ -1,2 +1,4 @@
-oc delete all -l template=deployment
-oc delete template deployment
+TEMPLATE=deployment
+
+oc delete all -l template=$TEMPLATE
+oc delete template $TEMPLATE
