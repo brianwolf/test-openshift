@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: app-template-basic
+  name: basic
   annotations:
     description: "Ejemplo de template para levantar 2 nginx con un index diferente cada uno"
     iconClass: "icon-play"
@@ -24,10 +24,10 @@ objects:
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: is-app1
+    name: basic-is-app1
     labels:
-      app: app1
-      template: app-template-basic
+      app: basic-app1
+      template: basic
     annotations:
       openshift.io/image.insecureRepository: "true"
   spec:
@@ -40,10 +40,10 @@ objects:
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: is-app2
+    name: basic-is-app2
     labels:
-      app: app2
-      template: app-template-basic
+      app: basic-app2
+      template: basic
     annotations:
       openshift.io/image.insecureRepository: "true"
   spec:
@@ -59,10 +59,10 @@ objects:
 - apiVersion: v1
   kind: Pod
   metadata:
-    name: pod-app1-a
+    name: basic-pod-app1-a
     labels:
-      app: app1
-      template: app-template-basic
+      app: basic-app1
+      template: basic
   spec:
     containers:
     - name: pod-app1-a
@@ -78,13 +78,13 @@ objects:
 - apiVersion: v1
   kind: Pod
   metadata:
-    name: pod-app1-b
+    name: basic-pod-app1-b
     labels:
-      app: app1
-      template: app-template-basic
+      app: basic-app1
+      template: basic
   spec:
     containers:
-    - name: pod-app1-b
+    - name: basic-pod-app1-b
       image: 172.30.1.1:5000/nalabs/is-app1
       ports:
       - containerPort: 8081
@@ -97,13 +97,13 @@ objects:
 - apiVersion: v1
   kind: Pod
   metadata:
-    name: pod-app2-a
+    name: basic-pod-app2-a
     labels:
-      app: app2
-      template: app-template-basic
+      app: basic-app2
+      template: basic
   spec:
     containers:
-    - name: pod-app2-a
+    - name: basic-pod-app2-a
       image: 172.30.1.1:5000/nalabs/is-app2
       ports:
       - containerPort: 8081
@@ -113,13 +113,13 @@ objects:
 - apiVersion: v1
   kind: Pod
   metadata:
-    name: pod-app2-b
+    name: basic-pod-app2-b
     labels:
-      app: app2
-      template: app-template-basic
+      app: basic-app2
+      template: basic
   spec:
     containers:
-    - name: pod-app2-b
+    - name: basic-pod-app2-b
       image: 172.30.1.1:5000/nalabs/is-app2
       ports:
       - containerPort: 8081
@@ -131,14 +131,14 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: svc-app1
+    name: basic-svc-app1
     labels:
-      app: app1
-      template: app-template-basic
+      app: basic-app1
+      template: basic
   spec:
     selector:
-      app: app1
-      template: app-template-basic
+      app: basic-app1
+      template: basic
     sessionAffinity: None
     ports:
     - name: web
@@ -151,14 +151,14 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: svc-app2
+    name: basic-svc-app2
     labels:
-      app: app2
-      template: app-template-basic
+      app: basic-app2
+      template: basic
   spec:
     selector:
-      app: app2
-      template: app-template-basic
+      app: basic-app2
+      template: basic
     type: ClusterIP
     ports:
     - name: web
@@ -173,17 +173,17 @@ objects:
 - apiVersion: v1
   kind: Route
   metadata:
-    name: route-app
+    name: basic-route-app
     labels:
-      template: app-template-basic
+      template: basic
   spec:
     host: app.192.168.99.101.nip.io
     path: "/" 
     to:
       kind: Service
-      name: svc-app1
+      name: basic-svc-app1
       weight: 20      
     alternateBackends:
     - kind: Service
-      name: svc-app2 
+      name: basic-svc-app2 
       weight: 10     

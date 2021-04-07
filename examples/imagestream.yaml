@@ -4,7 +4,7 @@ metadata:
   name: is-app1
   labels:
     app: app1
-    template: app-template-basic
+    template: basic
   annotations:
     openshift.io/image.insecureRepository: "true"
 spec:
