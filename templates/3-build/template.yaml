@@ -3,7 +3,7 @@ kind: Template
 metadata:
   name: build
   annotations:
-    description: "Ejemplo de template para levantar 2 nginx con un index diferente cada uno"
+    description: "Ejemplo de template para dockerizar y desplegar codigo python, una vez este todo desplegar comenzar el build a mano"
     iconClass: "icon-play"
     tags: "app"
 
@@ -23,12 +23,6 @@ objects:
       template: build
     annotations:
       openshift.io/image.insecureRepository: "true"
-  spec:
-    tags:
-      - name: latest
-        from:
-          kind: DockerImage
-          name: 'docker.io/brianlobonalabs/nginx-app1:latest'
 
 
 # BUILDCONFIG
@@ -77,7 +71,7 @@ objects:
     - name: web
       port: 8080
       protocol: TCP
-      targetPort: 8081
+      targetPort: ${{FLASK_PORT}}
   status:
     loadBalancer: {}
 
@@ -92,6 +86,8 @@ objects:
       template: build
   spec:
     host: app.${APPLICATION_DOMAIN}.nip.io
+    port:
+      targetPort: web
     path: "/" 
     to:
       kind: Service
@@ -108,7 +104,7 @@ objects:
       app: build-app1
       template: build
   spec:
-    replicas: 2
+    replicas: 1
     selector:
       app: build-app1
       template: build
@@ -123,7 +119,7 @@ objects:
         - name: build-pod-app1
           image: ${DOCKER_REGISTRY_HOST_PORT}/nalabs/build-is-app1
           ports:
-          - containerPort: 8081
+          - containerPort: ${{FLASK_PORT}}
             protocol: TCP
 
 
@@ -151,4 +147,8 @@ parameters:
 
 - name: REPO_GIT_DOCKERFILE_PATH
   description: Path donde esta el Dockerfile dentro del REPO_GIT_CONTEXT_PATH
-  value: src/python/Dockerfile
+  value: Dockerfile
+
+- name: FLASK_PORT
+  description: Puerto de la aplicacion python
+  value: "5000"
