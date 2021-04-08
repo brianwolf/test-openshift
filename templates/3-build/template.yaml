@@ -1,0 +1,154 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: build
+  annotations:
+    description: "Ejemplo de template para levantar 2 nginx con un index diferente cada uno"
+    iconClass: "icon-play"
+    tags: "app"
+
+labels:
+  environment: DEV
+
+objects:
+
+# IMAGESTREAMS
+# ------------------------
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: build-is-app1
+    labels:
+      app: build-app1
+      template: build
+    annotations:
+      openshift.io/image.insecureRepository: "true"
+  spec:
+    tags:
+      - name: latest
+        from:
+          kind: DockerImage
+          name: 'docker.io/brianlobonalabs/nginx-app1:latest'
+
+
+# BUILDCONFIG
+# ------------------------
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: build-bc-app1
+    labels:
+      app: build-app1
+      template: build
+  spec:
+    triggers: 
+      - type: "ImageChange"
+    source:
+      type: Git
+      contextDir: ${REPO_GIT_CONTEXT_DIR}
+      git:
+        uri: ${REPO_GIT_URL}
+        ref: ${REPO_GIT_BRANCH}
+    strategy:
+      type: Docker
+      dockerStrategy:
+        dockerfilePath: ${REPO_GIT_DOCKERFILE_PATH}
+    output:
+      to:
+        kind: ImageStreamTag
+        name: build-is-app1:latest
+
+
+# SERVICES
+# ------------------------
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: build-svc-app1
+    labels:
+      app: build-app1
+      template: build
+  spec:
+    selector:
+      app: build-app1
+      template: build
+    sessionAffinity: None
+    ports:
+    - name: web
+      port: 8080
+      protocol: TCP
+      targetPort: 8081
+  status:
+    loadBalancer: {}
+
+
+# ROUTERS
+# ------------------------
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: build-route-app
+    labels:
+      template: build
+  spec:
+    host: app.${APPLICATION_DOMAIN}.nip.io
+    path: "/" 
+    to:
+      kind: Service
+      name: build-svc-app1
+
+
+# DEPLOYMENTS
+# ------------------------
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: build-dc-app1
+    labels:
+      app: build-app1
+      template: build
+  spec:
+    replicas: 2
+    selector:
+      app: build-app1
+      template: build
+    template:
+      metadata:
+        name: build-pod-app1
+        labels:
+          app: build-app1
+          template: build
+      spec:
+        containers:
+        - name: build-pod-app1
+          image: ${DOCKER_REGISTRY_HOST_PORT}/nalabs/build-is-app1
+          ports:
+          - containerPort: 8081
+            protocol: TCP
+
+
+parameters:
+
+- name: APPLICATION_DOMAIN
+  description: host de la aplicacion
+  value: 192.168.99.101
+
+- name: DOCKER_REGISTRY_HOST_PORT
+  description: host y port del registry
+  value: 172.30.1.1:5000
+
+- name: REPO_GIT_URL
+  description: Url del repo donde esta el codigo fuente
+  value: https://github.com/brianwolf/test-openshift.git
+
+- name: REPO_GIT_BRANCH
+  description: Branch del repo donde esta el codigo fuente
+  value: master
+
+- name: REPO_GIT_CONTEXT_DIR
+  description: Path donde esta el codigo fuente dentro del repo
+  value: src/python
+
+- name: REPO_GIT_DOCKERFILE_PATH
+  description: Path donde esta el Dockerfile dentro del REPO_GIT_CONTEXT_PATH
+  value: src/python/Dockerfile
