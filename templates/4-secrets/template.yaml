@@ -1,9 +1,11 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: build
+  name: confmapsecret
   annotations:
-    description: "Ejemplo de template para dockerizar y desplegar codigo python, una vez este todo desplegar comenzar el build a mano"
+    description: 
+      "Ejemplo de template para dockerizar y desplegar codigo python, 
+      una vez este todo desplegar comenzar el build a mano, usa secrets y config maps"
     iconClass: "icon-play"
     tags: "app"
 
@@ -12,15 +14,48 @@ labels:
 
 objects:
 
+# CONFIGSMAPS
+# ------------------------
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: confmapsecret-cm-apps
+    labels:
+      typesecret: apps
+      template: confmapsecret
+  data: 
+    example.property.1: hello
+    example.property.2: world
+    example.property.file: |-
+      property.1=value-1
+      property.2=value-2
+      property.3=value-3
+
+
+# SECRETS
+# ------------------------
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: confmapsecret-secret-db
+    labels:
+      typesecret: db
+      template: confmapsecret
+  type: Opaque 
+  stringData: 
+    user: system
+    pass: admin
+    
+
 # IMAGESTREAMS
 # ------------------------
 - apiVersion: v1
   kind: ImageStream
   metadata:
-    name: build-is-app1
+    name: confmapsecret-is-app1
     labels:
-      app: build-app1
-      template: build
+      app: confmapsecret-app1
+      template: confmapsecret
     annotations:
       openshift.io/image.insecureRepository: "true"
 
@@ -30,10 +65,10 @@ objects:
 - apiVersion: v1
   kind: BuildConfig
   metadata:
-    name: build-bc-app1
+    name: confmapsecret-bc-app1
     labels:
-      app: build-app1
-      template: build
+      app: confmapsecret-app1
+      template: confmapsecret
   spec:
     triggers: 
       - type: "ImageChange"
@@ -51,7 +86,7 @@ objects:
     output:
       to:
         kind: ImageStreamTag
-        name: build-is-app1:latest
+        name: confmapsecret-is-app1:latest
 
 
 # SERVICES
@@ -59,14 +94,14 @@ objects:
 - apiVersion: v1
   kind: Service
   metadata:
-    name: build-svc-app1
+    name: confmapsecret-svc-app1
     labels:
-      app: build-app1
-      template: build
+      app: confmapsecret-app1
+      template: confmapsecret
   spec:
     selector:
-      app: build-app1
-      template: build
+      app: confmapsecret-app1
+      template: confmapsecret
     sessionAffinity: None
     ports:
     - name: web
@@ -82,9 +117,9 @@ objects:
 - apiVersion: v1
   kind: Route
   metadata:
-    name: build-route-app
+    name: confmapsecret-route-app
     labels:
-      template: build
+      template: confmapsecret
   spec:
     host: app.${APPLICATION_DOMAIN}.nip.io
     port:
@@ -92,7 +127,7 @@ objects:
     path: "/" 
     to:
       kind: Service
-      name: build-svc-app1
+      name: confmapsecret-svc-app1
 
 
 # DEPLOYMENTS
@@ -100,25 +135,48 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
-    name: build-dc-app1
+    name: confmapsecret-dc-app1
     labels:
-      app: build-app1
-      template: build
+      app: confmapsecret-app1
+      template: confmapsecret
   spec:
     replicas: 1
     selector:
-      app: build-app1
-      template: build
+      app: confmapsecret-app1
+      template: confmapsecret
+    env:
+      - name: ENV_VAR 
+        value: soy una variable de ambiente
+      - name: DB_USER
+        valueFrom:
+          secretKeyRef:
+            name: confmapsecret-secret-db
+            key: user
+      - name: DB_PASS
+        valueFrom:
+          secretKeyRef:
+            name: confmapsecret-secret-db
+            key: pass
+      - name: APP_VAR
+        valueFrom:
+          configMapRef:
+            name: confmapsecret-cm-apps
+            key: example.property.1
+    envFrom:
+      - configMapRef: 
+        name: confmapsecret-cm-apps
+      - secretKeyRef: 
+        name: confmapsecret-secret-db
     template:
       metadata:
-        name: build-pod-app1
+        name: confmapsecret-pod-app1
         labels:
-          app: build-app1
-          template: build
+          app: confmapsecret-app1
+          template: confmapsecret
       spec:
         containers:
-        - name: build-pod-app1
-          image: ${DOCKER_REGISTRY_HOST_PORT}/nalabs/build-is-app1
+        - name: confmapsecret-pod-app1
+          image: ${DOCKER_REGISTRY_HOST_PORT}/nalabs/confmapsecret-is-app1
           ports:
           - containerPort: ${{FLASK_PORT}}
             protocol: TCP
