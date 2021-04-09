@@ -14,39 +14,6 @@ labels:
 
 objects:
 
-# CONFIGSMAPS
-# ------------------------
-- apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: confmapsecret-cm-apps
-    labels:
-      typesecret: apps
-      template: confmapsecret
-  data: 
-    example.property.1: hello
-    example.property.2: world
-    example.property.file: |-
-      property.1=value-1
-      property.2=value-2
-      property.3=value-3
-
-
-# SECRETS
-# ------------------------
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: confmapsecret-secret-db
-    labels:
-      typesecret: db
-      template: confmapsecret
-  type: Opaque 
-  stringData: 
-    user: system
-    pass: admin
-    
-
 # IMAGESTREAMS
 # ------------------------
 - apiVersion: v1
@@ -130,6 +97,39 @@ objects:
       name: confmapsecret-svc-app1
 
 
+# CONFIGSMAPS
+# ------------------------
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: confmapsecret-cm-apps
+    labels:
+      typeconfig: apps
+      template: confmapsecret
+  data: 
+    example_property_1: hello
+    example_property_2: world
+    example.property.file: |-
+      property.1=value-1
+      property.2=value-2
+      property.3=value-3
+
+
+# SECRETS
+# ------------------------
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: confmapsecret-secret-db
+    labels:
+      typesecret: db
+      template: confmapsecret
+  type: Opaque 
+  stringData: 
+    db_user: system
+    db_pass: admin
+    
+
 # DEPLOYMENTS
 # ------------------------
 - apiVersion: v1
@@ -144,29 +144,6 @@ objects:
     selector:
       app: confmapsecret-app1
       template: confmapsecret
-    env:
-      - name: ENV_VAR 
-        value: soy una variable de ambiente
-      - name: DB_USER
-        valueFrom:
-          secretKeyRef:
-            name: confmapsecret-secret-db
-            key: user
-      - name: DB_PASS
-        valueFrom:
-          secretKeyRef:
-            name: confmapsecret-secret-db
-            key: pass
-      - name: APP_VAR
-        valueFrom:
-          configMapRef:
-            name: confmapsecret-cm-apps
-            key: example.property.1
-    envFrom:
-      - configMapRef: 
-        name: confmapsecret-cm-apps
-      - secretKeyRef: 
-        name: confmapsecret-secret-db
     template:
       metadata:
         name: confmapsecret-pod-app1
@@ -175,11 +152,34 @@ objects:
           template: confmapsecret
       spec:
         containers:
-        - name: confmapsecret-pod-app1
-          image: ${DOCKER_REGISTRY_HOST_PORT}/nalabs/confmapsecret-is-app1
-          ports:
-          - containerPort: ${{FLASK_PORT}}
-            protocol: TCP
+          - name: confmapsecret-pod
+            image: ${DOCKER_REGISTRY_HOST_PORT}/nalabs/confmapsecret-is-app1
+            ports:
+              - containerPort: ${{FLASK_PORT}}
+                protocol: TCP
+            env:
+              - name: ENV_VAR 
+                value: soy una variable de ambiente
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: confmapsecret-secret-db
+                    key: db_user
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: confmapsecret-secret-db
+                    key: db_pass
+              - name: APP_VAR
+                valueFrom:
+                  configMapKeyRef:
+                    name: confmapsecret-cm-apps
+                    key: example_property_1
+            envFrom:
+              - configMapRef: 
+                  name: confmapsecret-cm-apps
+              - secretRef: 
+                  name: confmapsecret-secret-db
 
 
 parameters:
