@@ -21,7 +21,7 @@ def env():
 @app.route('/env/all')
 def env_all():
     result = subprocess.run(['env'], stdout=subprocess.PIPE)
-    return result.stdout.decode('utf-8')
+    return result.stdout.decode('utf-8').replece(' ', '\n')
 
 
 if __name__ == '__main__':
