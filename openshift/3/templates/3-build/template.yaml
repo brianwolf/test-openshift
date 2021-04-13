@@ -144,10 +144,10 @@ parameters:
 
 - name: REPO_GIT_CONTEXT_DIR
   description: Path donde esta el codigo fuente dentro del repo
-  value: src/python
+  value: resources/src/python
 
 - name: REPO_GIT_DOCKERFILE_PATH
-  description: Path donde esta el Dockerfile dentro del REPO_GIT_CONTEXT_PATH
+  description: Path donde esta el Dockerfile dentro del REPO_GIT_CONTEXT_DIR
   value: Dockerfile
 
 - name: FLASK_PORT
