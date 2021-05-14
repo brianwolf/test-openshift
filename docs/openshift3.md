@@ -11,7 +11,7 @@ Repositorio con ejemplos para openshift, contiene archivos yaml con templates, e
 
 1) Seguir el siguiente tutorial [tutorial de Youtube](https://www.youtube.com/watch?v=RcZW4ZRzl-Q&ab_channel=I%C3%B1igoSerrano) para instalar minishift
 
-2) Para que tome los camandos de *oc* y *minishit* agregar la ruta de los binarios en el PATH
+2) Para que tome los comandos de *oc* y *minishit* agregar la ruta de los binarios en el PATH
 
 3) Si se va a usar virtualbox, configurarlo para que se use siempre que se inicie, porque sino te crea todo de nuevo con kvm
 
