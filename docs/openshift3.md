@@ -13,7 +13,7 @@ Repositorio con ejemplos para openshift, contiene archivos yaml con templates, e
 
 2) Para que tome los comandos de *oc* y *minishit* agregar la ruta de los binarios en el PATH
 
-3) Si se va a usar virtualbox, configurarlo para que se use siempre que se inicie, porque sino te crea todo de nuevo con kvm
+3) Si se va a usar virtualbox, configurarlo para que se use siempre que se inicie, porque sino te crea todo de nuevo con kvm (otro gestor de VMs)
 
 Para hacer esto ejecutar el siguiente comando
 
