@@ -5,15 +5,15 @@ Repositorio con ejemplos para openshift, contiene archivos yaml con templates, e
 ## :clipboard: Requisitos
 
 1) Tener instalado un openshift 3
-2) Pararse dentro de `/templates/<el template que quieras>/` y ejecutar los scripts que vienen
+2) Pararse dentro de `openshift/3/templates/<el template que quieras>/` y ejecutar los scripts que vienen
 
 ## :gear: Instalar minishift (openshift local)
 
 1) Seguir el siguiente tutorial [tutorial de Youtube](https://www.youtube.com/watch?v=RcZW4ZRzl-Q&ab_channel=I%C3%B1igoSerrano) para instalar minishift
 
-2) Para que tome los comandos de *oc* y *minishit* agregar la ruta de los binarios en el PATH
+2) Para que tome los comandos de *oc* y *minishit* agregar la ruta de los binarios en el PATH o mover los binarios a `/usr/bin`
 
-3) Si se va a usar virtualbox, configurarlo para que se use siempre que se inicie, porque sino te crea todo de nuevo con kvm (otro gestor de VMs)
+3) Si se va a usar virtualbox configurarlo para que se use siempre que se use este porque sino te crea todo de 0 con kvm (otro gestor de VMs)
 
 Para hacer esto ejecutar el siguiente comando
 
