@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  name: deployment-dc
+  labels:
+    app: deployment
+    template: deployment
+spec:
+  replicas: 2
+  selector:
+    app: deployment
+    template: deployment
+  template:
+    metadata:
+      name: deployment-pod
+      labels:
+        app: deployment
+        template: deployment
+    spec:
+      containers:
+      - name: deployment-pod
+        image: $(Values.params.spec.DOCKER_REGISTRY_HOST_PORT)/nalabs/deployment-is
+        ports:
+        - containerPort: 8081
+          protocol: TCP

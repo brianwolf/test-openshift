@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Kustomization
+commonLabels:
+  app: deployment
+  environment: DEV
+resources:
+  - ./resources/deployment.yaml
+  - ./resources/imageStream.yaml
+  - ./resources/router.yaml
+  - ./resources/service.yaml
+  - ./resources/values.yaml

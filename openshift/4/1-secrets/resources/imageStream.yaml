@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ImageStream
+metadata:
+  name: deployment-is
+  labels:
+    app: deployment
+    template: deployment
+  annotations:
+    openshift.io/image.insecureRepository: "true"
+spec:
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: 'docker.io/brianlobonalabs/nginx-app1:latest'
